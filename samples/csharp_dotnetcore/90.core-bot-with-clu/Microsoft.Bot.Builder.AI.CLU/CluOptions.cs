@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Azure.AI.Language.Conversations;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -46,7 +47,19 @@ namespace Microsoft.Bot.Builder.AI.CLU
         /// The version of the api to use.
         /// </summary>
         [JsonProperty("apiVersion")]
-        public string ApiVersion = "2021-07-15-preview";
+        public ConversationAnalysisClientOptions.ServiceVersion ApiVersion = ConversationAnalysisClientOptions.ServiceVersion.V2021_11_01_Preview;
+
+        /// <summary>
+        /// The name of the target project this request is sending to directly.
+        /// </summary>
+        [JsonProperty("DirectTarget")]
+        public string DirectTarget { get; set; }
+
+        /// <summary>
+        /// A dictionary representing the input for each target project.
+        /// </summary>
+        [JsonProperty("Parameters")]
+        public IDictionary<string, AnalysisParameters> Parameters { get; }
 
         internal string ProjectName => cluApplication.ProjectName;
         internal string DeploymentName => cluApplication.DeploymentName;
