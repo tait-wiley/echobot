@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.AI.CLU;
 using System.Linq;
+using Microsoft.BotBuilderSamples.Clu;
 
 namespace Microsoft.BotBuilderSamples
 {

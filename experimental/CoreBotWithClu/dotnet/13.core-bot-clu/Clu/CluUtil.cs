@@ -3,11 +3,12 @@
 
 using System.Collections.Generic;
 using Azure.AI.Language.Conversations;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Bot.Builder.AI.CLU
+namespace Microsoft.BotBuilderSamples.Clu
 {
     // Utility functions used to extract and transform data from CLU
     internal static class CluUtil

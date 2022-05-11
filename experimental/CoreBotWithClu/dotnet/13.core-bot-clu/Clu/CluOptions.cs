@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Azure.AI.Language.Conversations;
 using Newtonsoft.Json;
 
-namespace Microsoft.Bot.Builder.AI.CLU
+namespace Microsoft.BotBuilderSamples.Clu
 {
     public class CluOptions
     {

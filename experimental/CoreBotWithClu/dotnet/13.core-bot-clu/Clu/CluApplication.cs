@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Bot.Builder.AI.CLU
+namespace Microsoft.BotBuilderSamples.Clu
 {
     /// <summary>
     /// Data describing a CLU application.

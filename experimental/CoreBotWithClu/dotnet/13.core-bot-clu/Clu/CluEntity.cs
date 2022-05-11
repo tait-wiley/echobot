@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.Bot.Builder.AI.CLU
+namespace Microsoft.BotBuilderSamples.Clu
 {
     public class CluEntity
     {

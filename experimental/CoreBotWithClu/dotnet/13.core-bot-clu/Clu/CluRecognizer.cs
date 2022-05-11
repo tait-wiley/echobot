@@ -6,10 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Language.Conversations;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.TraceExtensions;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Bot.Builder.AI.CLU
+namespace Microsoft.BotBuilderSamples.Clu
 {
     /// <summary>
     /// Class for a recognizer that utilizes the CLU service.

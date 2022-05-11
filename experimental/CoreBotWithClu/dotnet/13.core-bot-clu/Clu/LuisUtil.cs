@@ -3,9 +3,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Bot.Builder;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Bot.Builder.AI.CLU
+namespace Microsoft.BotBuilderSamples.Clu
 {
     // Utility functions used to extract and transform data from Luis SDK
     internal static class LuisUtil
