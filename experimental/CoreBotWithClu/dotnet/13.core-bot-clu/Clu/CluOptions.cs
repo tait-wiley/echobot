@@ -6,6 +6,9 @@ using Azure.AI.Language.Conversations;
 
 namespace Microsoft.BotBuilderSamples.Clu
 {
+    /// <summary>
+    /// Options for interacting with the CLU service. 
+    /// </summary>
     public class CluOptions
     {
         /// <summary>

@@ -9,6 +9,10 @@ using Newtonsoft.Json;
 
 namespace Microsoft.BotBuilderSamples
 {
+    /// <summary>
+    /// An <see cref="IRecognizerConvert"/> implementation that provides helper methods and properties to interact with
+    /// the CLU recognizer results.
+    /// </summary>
     public class FlightBooking : IRecognizerConvert
     {
         public enum Intent

@@ -82,7 +82,7 @@ namespace Microsoft.BotBuilderSamples.Clu
             };
 
             var cluResponse = await _conversationsClient.AnalyzeConversationAsync(analyzeConversationOptions, cancellationToken);
-            var recognizerResult = BuildRecognizerResultFromCluResponse(cluResponse.Value, utterance);
+            var recognizerResult = RecognizerResultBuilder.BuildRecognizerResultFromCluResponse(cluResponse.Value, utterance);
 
             var traceInfo = JObject.FromObject(
                 new
@@ -92,61 +92,6 @@ namespace Microsoft.BotBuilderSamples.Clu
                 });
 
             await turnContext.TraceActivityAsync("CLU Recognizer", traceInfo, nameof(CluRecognizer), CluTraceLabel, cancellationToken);
-
-            return recognizerResult;
-        }
-
-        private RecognizerResult BuildRecognizerResultFromCluResponse(AnalyzeConversationResult cluResult, string utterance)
-        {
-            var recognizerResult = new RecognizerResult
-            {
-                Text = utterance,
-                AlteredText = cluResult.Query
-            };
-
-            // CLU Projects can be Conversation projects (LuisVNext) or Orchestration projects that
-            // can retrieve responses from other types of projects (Question answering, LUIS or Conversations)
-            var projectKind = cluResult.Prediction.ProjectKind;
-
-            if (projectKind == ProjectKind.Conversation)
-            {
-                CluUtil.BuildRecognizerResultFromConversations((ConversationPrediction)cluResult.Prediction, recognizerResult);
-            }
-            else
-            {
-                // workflow projects can return results from LUIS, Conversations or QuestionAnswering Projects
-                var orchestrationPrediction = (OrchestratorPrediction)cluResult.Prediction;
-
-                // finding name of the target project, then finding the target project type
-                var respondingProjectName = orchestrationPrediction.TopIntent;
-                var targetIntentResult = orchestrationPrediction.Intents[respondingProjectName];
-
-                // targetIntentResult.TargetKind is currently internal but will be changed in next version.
-                // GetType() is used temporarily.
-
-                // var targetKind = targetIntentResult.TargetKind;
-                var targetKind = targetIntentResult.GetType().Name;
-
-                switch (targetKind)
-                {
-                    case "ConversationTargetIntentResult":
-                        var conversationTargetIntentResult = (ConversationTargetIntentResult)targetIntentResult;
-                        CluUtil.BuildRecognizerResultFromConversations(conversationTargetIntentResult.Result.Prediction, recognizerResult);
-                        break;
-
-                    case "LuisTargetIntentResult":
-                        var luisTargetIntentResult = (LuisTargetIntentResult)targetIntentResult;
-                        CluUtil.BuildRecognizerResultFromLuis(luisTargetIntentResult, recognizerResult);
-                        break;
-
-                    case "QuestionAnsweringTargetIntentResult":
-                        var questionAnsweringTargetIntentResult = (QuestionAnsweringTargetIntentResult)targetIntentResult;
-                        CluUtil.BuildRecognizerResultFromQuestionAnswering(questionAnsweringTargetIntentResult, recognizerResult);
-                        break;
-                }
-            }
-
-            CluUtil.AddProperties(cluResult, recognizerResult);
 
             return recognizerResult;
         }
