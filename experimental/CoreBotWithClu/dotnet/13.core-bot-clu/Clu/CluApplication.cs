@@ -11,13 +11,6 @@ namespace Microsoft.BotBuilderSamples.Clu
     public class CluApplication
     {
         /// <summary>
-        /// Initializes a new, empty instance of the <see cref="CluApplication"/> class for mocking.
-        /// </summary>
-        public CluApplication()
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="CluApplication"/> class.
         /// </summary>
         /// <param name="projectName">CLU project name.</param>

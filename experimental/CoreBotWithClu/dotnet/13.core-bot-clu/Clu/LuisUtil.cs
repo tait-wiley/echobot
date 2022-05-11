@@ -11,12 +11,28 @@ namespace Microsoft.BotBuilderSamples.Clu
     // Utility functions used to extract and transform data from Luis SDK
     internal static class LuisUtil
     {
-        internal const string MetadataKey = "$instance";
-        internal const string GeoV2 = "builtin.geographyV2.";
-        internal static readonly HashSet<string> _dateSubtypes = new HashSet<string> { "date", "daterange", "datetime", "datetimerange", "duration", "set", "time", "timerange" };
-        internal static readonly HashSet<string> _geographySubtypes = new HashSet<string> { "poi", "city", "countryRegion", "continent", "state" };
-        
-        internal static string NormalizedIntent(string intent) => intent.Replace('.', '_').Replace(' ', '_');
+        private const string MetadataKey = "$instance";
+
+        private static readonly HashSet<string> DateSubtypes = new HashSet<string>
+        {
+            "date",
+            "daterange",
+            "datetime",
+            "datetimerange",
+            "duration",
+            "set",
+            "time",
+            "timerange"
+        };
+
+        private static readonly HashSet<string> GeographySubtypes = new HashSet<string>
+        {
+            "poi",
+            "city",
+            "countryRegion",
+            "continent",
+            "state"
+        };
 
         internal static IDictionary<string, IntentScore> GetIntents(JObject luisResult)
         {
@@ -26,22 +42,44 @@ namespace Microsoft.BotBuilderSamples.Clu
             {
                 foreach (var intent in intents)
                 {
-                    result.Add(NormalizedIntent(intent.Key), new IntentScore { Score = intent.Value["score"] == null ? 0.0 : intent.Value["score"].Value<double>() });
+                    result.Add(NormalizeIntent(intent.Key), new IntentScore {Score = intent.Value["score"] == null ? 0.0 : intent.Value["score"].Value<double>()});
                 }
             }
 
             return result;
         }
 
+        internal static JObject ExtractEntitiesAndMetadata(JObject prediction)
+        {
+            var entities = JObject.FromObject(prediction["entities"]);
+            return (JObject)MapProperties(entities, false);
+        }
+
+        internal static void AddProperties(JObject luis, RecognizerResult result)
+        {
+            var sentiment = luis["sentiment"];
+            if (luis["sentiment"] != null)
+            {
+                result.Properties.Add("sentiment", new JObject(
+                    new JProperty("label", sentiment["label"]),
+                    new JProperty("score", sentiment["score"])));
+            }
+        }
+
+        private static string NormalizeIntent(string intent)
+        {
+            return intent.Replace('.', '_').Replace(' ', '_');
+        }
+
         // Remove role and ensure that dot and space are not a part of entity names since we want to do JSON paths.
-        internal static string NormalizeEntity(string entity)
+        private static string NormalizeEntity(string entity)
         {
             // Type::Role -> Role
             var type = entity.Split(':').Last();
             return type.Replace('.', '_').Replace(' ', '_');
         }
 
-        internal static JToken MapProperties(JToken source, bool inInstance)
+        private static JToken MapProperties(JToken source, bool inInstance)
         {
             var result = source;
             if (source is JObject obj)
@@ -49,7 +87,7 @@ namespace Microsoft.BotBuilderSamples.Clu
                 var nobj = new JObject();
 
                 // Fix datetime by reverting to simple timex
-                if (!inInstance && obj.TryGetValue("type", out var type) && type.Type == JTokenType.String && _dateSubtypes.Contains(type.Value<string>()))
+                if (!inInstance && obj.TryGetValue("type", out var type) && type.Type == JTokenType.String && DateSubtypes.Contains(type.Value<string>()))
                 {
                     var timexs = obj["values"];
                     var arr = new JArray();
@@ -135,7 +173,7 @@ namespace Microsoft.BotBuilderSamples.Clu
                             break;
                         }
 
-                        if (tokenProp.Name.Contains("type") && _geographySubtypes.Contains(tokenProp.Value.ToString()))
+                        if (tokenProp.Name.Contains("type") && GeographySubtypes.Contains(tokenProp.Value.ToString()))
                         {
                             isGeographyV2 = tokenProp.Value.ToString();
                             break;
@@ -167,23 +205,6 @@ namespace Microsoft.BotBuilderSamples.Clu
             }
 
             return result;
-        }
-
-        internal static JObject ExtractEntitiesAndMetadata(JObject prediction)
-        {
-            var entities = (JObject)JObject.FromObject(prediction["entities"]);
-            return (JObject)MapProperties(entities, false);
-        }
-
-        internal static void AddProperties(JObject luis, RecognizerResult result)
-        {
-            var sentiment = luis["sentiment"];
-            if (luis["sentiment"] != null)
-            {
-                result.Properties.Add("sentiment", new JObject(
-                    new JProperty("label", sentiment["label"]),
-                    new JProperty("score", sentiment["score"])));
-            }
         }
     }
 }

@@ -13,37 +13,23 @@ namespace Microsoft.BotBuilderSamples.Clu
     // Utility functions used to extract and transform data from CLU
     internal static class CluUtil
     {
-        internal static string NormalizedIntent(string intent) => intent.Replace('.', '_').Replace(' ', '_');
-
-        internal static IDictionary<string, IntentScore> GetIntents(ConversationPrediction prediction)
-        {
-            var result = new Dictionary<string, IntentScore>();
-            foreach (var intent in prediction.Intents)
-            {
-                result.Add(intent.Category, new IntentScore {Score = intent.ConfidenceScore});
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// Returns a RecognizerResult from a conversations project response.
         /// 
         /// Intents: List of Intents with their confidence scores.
         /// Entities: has the object: { "entities" : [{entity1}, {entity2}] }
-        /// Properties: Additional Informations returned by the service.
+        /// Properties: Additional information returned by the service.
         /// 
         /// </summary>
-        internal static RecognizerResult BuildRecognizerResultFromConversations(BasePrediction result, RecognizerResult recognizerResult)
+        internal static RecognizerResult BuildRecognizerResultFromConversations(ConversationPrediction conversationPrediction, RecognizerResult recognizerResult)
         {
-            var conversationPrediction = result as ConversationPrediction;
             recognizerResult.Intents = GetIntents(conversationPrediction);
             recognizerResult.Entities = ExtractEntitiesAndMetadata(conversationPrediction);
             return recognizerResult;
         }
 
         /// <summary>
-        /// Returns a RecognizerResult from a question answering response recieved by an orchestration project.
+        /// Returns a RecognizerResult from a question answering response received by an orchestration project.
         /// The recognizer result has similar format to the one returned by the QnAMaker Recognizer:
         /// 
         /// Intents: Indicates whether an answer has been found and contains the confidence score.
@@ -68,8 +54,7 @@ namespace Microsoft.BotBuilderSamples.Clu
 
                 recognizerResult.Intents.Add(CluRecognizer.QuestionAnsweringMatchIntent, new IntentScore {Score = topAnswer.ConfidenceScore});
 
-                var answerArray = new JArray();
-                answerArray.Add(topAnswer.Answer);
+                var answerArray = new JArray {topAnswer.Answer};
                 ObjectPath.SetPathValue(recognizerResult, "entities.answer", answerArray);
 
                 recognizerResult.Properties["answers"] = qnaAnswers;
@@ -83,7 +68,7 @@ namespace Microsoft.BotBuilderSamples.Clu
         }
 
         /// <summary>
-        /// Returns a RecognizerResult from a luis response recieved by an orchestration project.
+        /// Returns a RecognizerResult from a luis response received by an orchestration project.
         /// The recognizer result has similar format to the one returned by the LUIS Recognizer:
         /// 
         /// Intents: Dictionary with (Intent, confidenceScores) pairs.
@@ -102,39 +87,25 @@ namespace Microsoft.BotBuilderSamples.Clu
             return recognizerResult;
         }
 
-        internal static JObject ExtractEntitiesAndMetadata(ConversationPrediction prediction)
-        {
-            var entities = prediction.Entities;
-            var entityObject = JsonConvert.SerializeObject(entities);
-            var jsonArray = JArray.Parse(entityObject);
-            var returnedObject = new JObject();
-
-            returnedObject.Add("entities", jsonArray);
-            return returnedObject;
-        }
-
-        internal static IDictionary<string, IntentScore> GetIntents(JObject cluResult)
+        private static IDictionary<string, IntentScore> GetIntents(ConversationPrediction prediction)
         {
             var result = new Dictionary<string, IntentScore>();
-            var intents = cluResult["intents"];
-            if (intents != null)
+            foreach (var intent in prediction.Intents)
             {
-                foreach (var intent in intents)
-                {
-                    result.Add(NormalizedIntent(intent["category"].Value<string>()), new IntentScore {Score = intent["confidenceScore"] == null ? 0.0 : intent["confidenceScore"].Value<double>()});
-                }
+                result.Add(intent.Category, new IntentScore {Score = intent.ConfidenceScore});
             }
 
             return result;
         }
 
-        internal static JObject ExtractEntitiesAndMetadata(JObject prediction)
+        private static JObject ExtractEntitiesAndMetadata(ConversationPrediction prediction)
         {
-            var entities = prediction["entities"];
-            var entityObject = new JObject();
-            entityObject.Add("entities", entities);
+            var entities = prediction.Entities;
+            var entityObject = JsonConvert.SerializeObject(entities);
+            var jsonArray = JArray.Parse(entityObject);
+            var returnedObject = new JObject {{"entities", jsonArray}};
 
-            return entityObject;
+            return returnedObject;
         }
 
         internal static void AddProperties(AnalyzeConversationResult conversationResult, RecognizerResult result)
@@ -157,7 +128,7 @@ namespace Microsoft.BotBuilderSamples.Clu
 
             if (projectKind == ProjectKind.Workflow)
             {
-                var prediction = conversationResult.Prediction as OrchestratorPrediction;
+                var prediction = (OrchestratorPrediction)conversationResult.Prediction;
                 var targetProject = prediction.Intents[prediction.TopIntent];
 
                 // temporarily renamed until next release of CLU SDK

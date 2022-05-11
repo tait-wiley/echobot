@@ -20,6 +20,6 @@ namespace Microsoft.BotBuilderSamples.Clu
         public int Length { get; set; }
 
         [JsonProperty("confidenceScore")]
-        public double ConfidenceScore { get; set; }
+        public float ConfidenceScore { get; set; }
     }
 }

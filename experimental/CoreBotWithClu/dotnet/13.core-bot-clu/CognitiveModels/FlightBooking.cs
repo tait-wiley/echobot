@@ -1,48 +1,38 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using System.Collections.Generic;
-using Microsoft.Bot.Builder;
 using System.Linq;
+using Microsoft.Bot.Builder;
 using Microsoft.BotBuilderSamples.Clu;
+using Newtonsoft.Json;
 
 namespace Microsoft.BotBuilderSamples
 {
-    public partial class FlightBooking: IRecognizerConvert
+    public class FlightBooking : IRecognizerConvert
     {
-        public string Text;
-        public string AlteredText;
-        public enum Intent {
+        public enum Intent
+        {
             BookFlight,
             Cancel,
             GetWeather,
             None
-        };
-        public Dictionary<Intent, IntentScore> Intents;
-
-        public class _Entities
-        {
-            public CluEntity[] entities;
-
-            public CluEntity[] fromCityList => entities.Where(e => e.Category == "fromCity").ToArray();
-
-            public CluEntity[] toCityList => entities.Where(e => e.Category == "toCity").ToArray();
-
-            public CluEntity[] flightDateList => entities.Where(e => e.Category == "flightDate").ToArray();
-
-            public string fromCity => fromCityList.FirstOrDefault()?.Text;
-
-            public string toCity => toCityList.FirstOrDefault()?.Text;
-
-            public string flightDate => flightDateList.FirstOrDefault()?.Text;
         }
 
-        public _Entities Entities;
+        public string Text { get; set; }
 
-        [JsonExtensionData(ReadData = true, WriteData = true)]
-        public IDictionary<string, object> Properties {get; set; }
+        public string AlteredText { get; set; }
+
+        public Dictionary<Intent, IntentScore> Intents { get; set; }
+
+        public CluEntities Entities { get; set; }
+
+        public IDictionary<string, object> Properties { get; set; }
 
         public void Convert(dynamic result)
         {
-            var app = JsonConvert.DeserializeObject<FlightBooking>(JsonConvert.SerializeObject(result, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }));
+            var jsonResult = JsonConvert.SerializeObject(result, new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore});
+            var app = JsonConvert.DeserializeObject<FlightBooking>(jsonResult);
 
             Text = app.Text;
             AlteredText = app.AlteredText;
@@ -51,9 +41,9 @@ namespace Microsoft.BotBuilderSamples
             Properties = app.Properties;
         }
 
-        public (Intent intent, double score) TopIntent()
+        public (Intent intent, double score) GetTopIntent()
         {
-            Intent maxIntent = Intent.None;
+            var maxIntent = Intent.None;
             var max = 0.0;
             foreach (var entry in Intents)
             {
@@ -63,7 +53,25 @@ namespace Microsoft.BotBuilderSamples
                     max = entry.Value.Score.Value;
                 }
             }
+
             return (maxIntent, max);
+        }
+
+        public class CluEntities
+        {
+            public CluEntity[] Entities;
+
+            public CluEntity[] GetFromCityList() => Entities.Where(e => e.Category == "fromCity").ToArray();
+
+            public CluEntity[] GetToCityList() => Entities.Where(e => e.Category == "toCity").ToArray();
+
+            public CluEntity[] GetFlightDateList() => Entities.Where(e => e.Category == "flightDate").ToArray();
+
+            public string GetFromCity() => GetFromCityList().FirstOrDefault()?.Text;
+
+            public string GetToCity() => GetToCityList().FirstOrDefault()?.Text;
+
+            public string GetFlightDate() => GetFlightDateList().FirstOrDefault()?.Text;
         }
     }
 }

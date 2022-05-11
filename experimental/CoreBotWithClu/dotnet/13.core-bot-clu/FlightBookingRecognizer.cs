@@ -4,9 +4,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
+using Microsoft.BotBuilderSamples.Clu;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.BotBuilderSamples.Clu
+namespace Microsoft.BotBuilderSamples
 {
     public class FlightBookingRecognizer : IRecognizer
     {
@@ -22,12 +23,7 @@ namespace Microsoft.BotBuilderSamples.Clu
                     configuration["CluDeploymentName"],
                     configuration["CluAPIKey"],
                     "https://" + configuration["CluAPIHostName"]);
-                // Set the recognizer options depending on which endpoint version you want to use.
-                // More details can be found in https://docs.microsoft.com/en-gb/azure/cognitive-services/luis/luis-migration-api-v3
-                var recognizerOptions = new CluOptions(cluApplication)
-                {
-                    Language = "en"
-                };
+                var recognizerOptions = new CluOptions(cluApplication) {Language = "en"};
 
                 _recognizer = new CluRecognizer(recognizerOptions);
             }

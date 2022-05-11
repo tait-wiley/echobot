@@ -4,10 +4,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CoreBotCLU;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
-using Microsoft.BotBuilderSamples.Clu;
 using Microsoft.Extensions.Logging;
 using Microsoft.Recognizers.Text.DataTypes.TimexExpression;
 
@@ -65,15 +65,15 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
             // Call CLU and gather any potential booking details. (Note the TurnContext has the response to the prompt.)
             var cluResult = await _cluRecognizer.RecognizeAsync<FlightBooking>(stepContext.Context, cancellationToken);
-            switch (cluResult.TopIntent().intent)
+            switch (cluResult.GetTopIntent().intent)
             {
                 case FlightBooking.Intent.BookFlight:
                     // Initialize BookingDetails with any entities we may have found in the response.
                     var bookingDetails = new BookingDetails()
                     {
-                        Destination = cluResult.Entities.toCity,
-                        Origin = cluResult.Entities.fromCity,
-                        TravelDate = cluResult.Entities.flightDate,
+                        Destination = cluResult.Entities.GetToCity(),
+                        Origin = cluResult.Entities.GetFromCity(),
+                        TravelDate = cluResult.Entities.GetFlightDate(),
                     };
 
                     // Run the BookingDialog giving it whatever details we have from the CLU call, it will fill out the remainder.
@@ -88,7 +88,7 @@ namespace Microsoft.BotBuilderSamples.Dialogs
 
                 default:
                     // Catch all for unhandled intents
-                    var didntUnderstandMessageText = $"Sorry, I didn't get that. Please try asking in a different way (intent was {cluResult.TopIntent().intent})";
+                    var didntUnderstandMessageText = $"Sorry, I didn't get that. Please try asking in a different way (intent was {cluResult.GetTopIntent().intent})";
                     var didntUnderstandMessage = MessageFactory.Text(didntUnderstandMessageText, didntUnderstandMessageText, InputHints.IgnoringInput);
                     await stepContext.Context.SendActivityAsync(didntUnderstandMessage, cancellationToken);
                     break;
